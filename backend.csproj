@@ -9,8 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MessagePack" Version="3.1.7" />
+        <PackageReference Include="AlibabaCloud.SDK.Sts20150401" Version="1.2.0" />
+        <PackageReference Include="Aliyun.TableStore.SDK" Version="6.0.3" />
+        <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
+        <PackageReference Include="MessagePack" Version="3.1.7"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.5.26302.115"/>
+        <PackageReference Include="Nanoid" Version="3.1.0" />
     </ItemGroup>
 
 </Project>
