@@ -12,6 +12,8 @@ if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
 PreExec.Run();
 
+// use module registry
 app.MapMiscEndpoints();
+app.MapSrpEndpoints();
 
 app.Run();
