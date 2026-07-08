@@ -1,11 +1,12 @@
-﻿﻿using Aliyun.OTS;
+﻿using System.Numerics;
+using Aliyun.OTS;
 using Aliyun.OTS.Request;
 using Ardalis.GuardClauses;
 using backend.Utils;
 using MessagePack;
 
 namespace backend.models;
-
+/* Misc */
 [MessagePackObject]
 public sealed record Pong
 {
@@ -46,3 +47,24 @@ public sealed record TestDbConnData
         return this;
     }
 }
+/* Misc */
+
+/* Auth */
+/* SRP */
+[MessagePackObject]
+public sealed record SrpPublic
+{
+    [Key("status")] public string Status { get; set; } = "Auth.Srp.PublicData.Unavailable";
+    [Key("request_id")] public string RequestId { get; set; } = IdGen.New();
+    [Key("data")] public SrpPublicData Data { get; set; } = new();
+}
+[MessagePackObject]
+public sealed record SrpPublicData
+{
+    [Key("N")] public byte[] N { get; set; } = Tools.Pad(Params.N);
+    [Key("G")] public BigInteger G { get; set; } = Params.G;
+    [Key("length")] public int Length { get; set; } = Params.Length;
+    [Key("hash")] public byte[] Hash { get; set; } = [.. Params.Hash];
+}
+/* SRP */
+/* Auth */
