@@ -69,7 +69,7 @@ CommentID : STRING (ULID)
 | Name            | Type                          |
 |-----------------|-------------------------------|
 | ParentCommentID | String (Nullable)             |
-| UserID          | Integer                       |
+| UserID          | Binary (Size: 8192 Bits)      |
 | Body            | String (Markdown Safe Subset) |
 | State           | Integer                       |
 | CreatedAt       | Integer                       |
@@ -96,7 +96,7 @@ CommentID : STRING (ULID)
 Primary Key
 
 ```text
-UserID : INTEGER
+UserID : BINARY
 ```
 
 无 Attribute。
@@ -120,7 +120,18 @@ PermissionCode : INTEGER
 Primary Key
 
 ```text
-UserID : INTEGER (Auto Increment)
+UserID : BINARY
+```
+
+## UserID Binary Format
+
+UserID 采用加密二进制格式，最大 1KB，包含注册元数据，用于防伪造：
+
+```text
+[CreatedTimestamp : 8 bytes][ClientIP : 4 bytes][Random : N bytes][Padding]
+
+使用环境变量中的公钥加密，博客所有者可自行解密验证。
+攻击者无法构造有效 UserID，
 ```
 
 ## Attributes
@@ -182,7 +193,7 @@ CredentialID
 
 | Name      | Type    |
 |-----------|---------|
-| UserID    | Integer |
+| UserID    | Binary  |
 | State     | Integer |
 | CreatedAt | Integer |
 | UpdatedAt | Integer |
