@@ -16,7 +16,8 @@ public class Database
             new string(Env.InVpc ? $"https://{Env.Region}.vpc.ots.aliyuncs.com" : $"https://{Env.Region}.ots.aliyuncs.com"),
             Env.EffectiveAccessKeyId,
             Env.EffectiveAccessKeySecret,
-            Env.DatabaseName
+            Env.DatabaseName,
+            Env.EffectiveSecurityToken
         ));
     }
 }
