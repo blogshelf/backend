@@ -1,4 +1,5 @@
-﻿using backend.models;
+﻿using Aliyun.OTS;
+using backend.models;
 using MessagePack;
 
 namespace backend.handler;
@@ -21,5 +22,10 @@ public static class SrpEndpoints
             Data = new SrpPublicData()
         };
         return Results.Bytes(Serialize(resp));
+    }
+
+    private static IResult Register(OTSClient client)
+    {
+        return Results.Unauthorized();
     }
 }

@@ -1,12 +1,17 @@
 ﻿using Aliyun.Credentials;
 using Aliyun.Credentials.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace backend.initialization;
 
 public class DotEnv
 {
-    internal DotEnv()
+    private readonly IConfiguration _config;
+
+    internal DotEnv(IConfiguration config)
     {
+        _config = config;
+
         if (SecurityToken is null && RoleArn is not null && RoleSessionName is not null)
             Credential = new Client(new Config
             {
@@ -20,27 +25,32 @@ public class DotEnv
             Credential = new Client(new Config
             {
                 Type = "sts",
-                // 从环境变量中获取AccessKey ID值。
                 AccessKeyId = AccessKey,
-                // 从环境变量中获取AccessKey Secret值。
                 AccessKeySecret = SecretKey,
-                // 从环境变量中获取的临时SecurityToken。
                 SecurityToken = SecurityToken
             });
     }
 
-    private string AccessKey { get; } = Environment.GetEnvironmentVariable("ALIBABA_CLOUD_ACCESS_KEY_ID ") ??
-                                        throw new InvalidOperationException("必须设置数据库访问密钥");
+    private string Get(string key) =>
+        _config[key] ?? Environment.GetEnvironmentVariable(key) ??
+        throw new InvalidOperationException($"必须设置 {key}");
 
-    private string SecretKey { get; } = Environment.GetEnvironmentVariable("ALIBABA_CLOUD_ACCESS_KEY_SECRET ") ??
-                                        throw new InvalidOperationException("必须设置数据库访问密钥");
+    private string? GetOptional(string key) =>
+        _config[key] ?? Environment.GetEnvironmentVariable(key);
 
-    private string? SecurityToken { get; } = Environment.GetEnvironmentVariable("ALIBABA_CLOUD_SECURITY_TOKEN");
-    private string? RoleArn { get; } = Environment.GetEnvironmentVariable("ALIBABA_CLOUD_ROLE_ARN");
-    private string? RoleSessionName { get; } = Environment.GetEnvironmentVariable("ALIBABA_CLOUD_ROLE_SESSION_NAME");
-    public string Region { get; } = Environment.GetEnvironmentVariable("REGION") ?? "cn-hongkong";
-    public bool InVpc { get; } = bool.Parse(Environment.GetEnvironmentVariable("IN_VPC") ?? "false");
+    private string AccessKey => Get("ALIBABA_CLOUD_ACCESS_KEY_ID");
+    private string SecretKey => Get("ALIBABA_CLOUD_ACCESS_KEY_SECRET");
+
+    private string? SecurityToken => GetOptional("ALIBABA_CLOUD_SECURITY_TOKEN");
+    private string? RoleArn => GetOptional("ALIBABA_CLOUD_ROLE_ARN");
+    private string? RoleSessionName => GetOptional("ALIBABA_CLOUD_ROLE_SESSION_NAME");
+    public string Region => GetOptional("REGION") ?? "cn-hongkong";
+    public bool InVpc => bool.Parse(GetOptional("IN_VPC") ?? "false");
     internal Client? Credential { get; set; }
-    
-    internal string DatabaseName { get; } = Environment.GetEnvironmentVariable("DATABSE_NAME") ?? throw new InvalidOperationException("必须设置数据库名称");
+
+    internal string EffectiveAccessKeyId => Credential?.GetCredential()?.AccessKeyId ?? AccessKey;
+    internal string EffectiveAccessKeySecret => Credential?.GetCredential()?.AccessKeySecret ?? SecretKey;
+    internal string? EffectiveSecurityToken => Credential?.GetCredential()?.SecurityToken ?? SecurityToken;
+
+    internal string DatabaseName => Get("DATABSE_NAME");
 }

@@ -42,6 +42,19 @@ PostID : STRING (ULID)
 | UpdatedAt    | Integer                   | 修改时间                                   |
 | Version      | Integer                   | 乐观锁/缓存版本                               |
 
+## Secondary Indexes
+
+### PostByDate
+
+按创建时间倒序查询文章（首页时间线）。
+
+```text
+Index Name:   PostByDate
+Primary Key:  CreatedAt (INTEGER) DESC
+Covered:      Title, Summary, State, MonthID
+Type:         Global
+```
+
 ---
 
 # Table: Comment
@@ -76,6 +89,19 @@ CommentID : STRING (ULID)
 | UpdatedAt       | Integer                       |
 | UserSignature   | Binary                        |
 | ClientKeyID     | String                        |
+
+## Secondary Indexes
+
+### CommentByUser
+
+按用户查询评论列表（按时间倒序）。
+
+```text
+Index Name:   CommentByUser
+Primary Key:  UserID (BINARY) + CreatedAt (INTEGER) DESC
+Covered:      Body, State
+Type:         Global
+```
 
 ---
 
@@ -228,6 +254,21 @@ Binary(MsgPack)
 
 程序根据当前登录方式读取对应列，无需反射，无需固定 Schema，未来新增认证方式无需修改数据库结构。
 
+## Secondary Indexes
+
+### UserIdentityByUserID
+
+按 UserID 反查所有绑定身份。
+
+```text
+Index Name:   UserIdentityByUserID
+Primary Key:  UserID (BINARY)
+Covered:      State, CreatedAt, UpdatedAt
+Type:         Global
+```
+
+注：IdentityType 和 IdentityKey 是数据表主键，会自动包含在索引结果中，无需重复指定为覆盖列。
+
 ---
 
 # Table: Session
@@ -265,6 +306,11 @@ SessionID
 | LastSeenAt       | Integer         |
 | ExpiresAt        | Integer         |
 
+## Secondary Indexes
+
+> 注：Session 表开启了 TTL（2592000 秒），OTS 不支持在此类表上创建二级索引。
+> 登录验证时按 SessionID 查询，需通过应用层维护的映射表或全表扫描实现。
+
 ---
 
 # Table: Config
@@ -293,6 +339,7 @@ CURRENT
 |---------------|---------|
 | SchemaVersion | Integer |
 | ConfigVersion | Integer |
+| OwnerUserID   | Binary  |
 
 ## Business Configuration
 

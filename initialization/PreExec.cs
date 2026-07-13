@@ -8,17 +8,14 @@ namespace backend.initialization;
 
 public abstract class PreExec
 {
-    public DotEnv Env { get; } = new();
-    public static OTSClient? Client { get; } = Database.Client;
-
-    public static void Run()
+    public static void Run(OTSClient client)
     {
         try
         {
 #if DEBUG
-            Debug.Assert(Client != null, nameof(Client) + " != null");
+            Debug.Assert(client != null, nameof(client) + " != null");
 #endif
-            var response = Client.ListTable(new ListTableRequest());
+            var response = client.ListTable(new ListTableRequest());
             Guard.Against.NullOrEmpty(response.TableNames, nameof(response.TableNames));
         }
         catch (Exception ex)

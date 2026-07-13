@@ -4,13 +4,14 @@ using backend.initialization;
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services.AddOpenApi();
-builder.Services.AddSingleton(Database.Client);
+builder.Services.AddSingleton(new Database(builder.Configuration));
+builder.Services.AddSingleton(sp => sp.GetRequiredService<Database>().Client);
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
-PreExec.Run();
+PreExec.Run(app.Services.GetRequiredService<Database>().Client);
 
 // use module registry
 app.MapMiscEndpoints();

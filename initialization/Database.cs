@@ -1,15 +1,22 @@
 ﻿using Aliyun.OTS;
+using Microsoft.Extensions.Configuration;
 
 namespace backend.initialization;
 
-public static class Database
+public class Database
 {
     public static ILogger LoggerInstance { get; } = Logger.LogFactory.CreateLogger("");
-    private static DotEnv Env { get; } = new DotEnv();
-    public static OTSClient Client { get; } = new OTSClient(new OTSClientConfig(
-        new string(Env.InVpc ? $"https://{Env.Region}.vpc.ots.aliyuncs.com" : $"https://{Env.Region}.ots.aliyuncs.com"),
-        Env.Credential?.GetCredential().AccessKeyId,
-        Env.Credential?.GetCredential().AccessKeySecret,
-        Env.DatabaseName
+    public DotEnv Env { get; }
+    public OTSClient Client { get; }
+
+    public Database(IConfiguration config)
+    {
+        Env = new DotEnv(config);
+        Client = new OTSClient(new OTSClientConfig(
+            new string(Env.InVpc ? $"https://{Env.Region}.vpc.ots.aliyuncs.com" : $"https://{Env.Region}.ots.aliyuncs.com"),
+            Env.EffectiveAccessKeyId,
+            Env.EffectiveAccessKeySecret,
+            Env.DatabaseName
         ));
+    }
 }
