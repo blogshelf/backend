@@ -4,10 +4,10 @@
         <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <InvariantGlobalization>true</InvariantGlobalization>
         <PublishAot>true</PublishAot>
-      <UserSecretsId>8e0b778b-3bf3-416a-b2f5-0b738913d4f5</UserSecretsId>
-  </PropertyGroup>
+        <UserSecretsId>8e0b778b-3bf3-416a-b2f5-0b738913d4f5</UserSecretsId>
+        <DefaultItemExcludes>$(DefaultItemExcludes);scripts/**</DefaultItemExcludes>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="AlibabaCloud.SDK.Sts20150401" Version="1.2.0" />

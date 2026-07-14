@@ -15,3 +15,8 @@ obj/
 ## Build
 packages/
 *.nupkg
+
+## Secrets
+*.pem
+*.env
+*.tfvars
