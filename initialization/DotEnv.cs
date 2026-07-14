@@ -1,6 +1,5 @@
 ﻿using Aliyun.Credentials;
 using Aliyun.Credentials.Models;
-using Microsoft.Extensions.Configuration;
 
 namespace backend.initialization;
 
@@ -56,5 +55,9 @@ public class DotEnv
     internal string EffectiveAccessKeySecret => Credential?.GetCredential()?.AccessKeySecret ?? SecretKey;
     internal string? EffectiveSecurityToken => Credential?.GetCredential()?.SecurityToken ?? SecurityToken;
 
-    internal string DatabaseName => Get("DATABSE_NAME");
+    internal string DatabaseName => Get("DATABASE_NAME");
+#if DEBUG
+    internal string? UserIdPrivateKey => GetOptional("OWNER_PRIVATE_KEY");
+#endif
+    internal string? UserIdPublicKey => GetOptional("OWNER_PUBLIC_KEY");
 }

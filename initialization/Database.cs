@@ -13,7 +13,7 @@ public class Database
     {
         Env = new DotEnv(config);
         Client = new OTSClient(new OTSClientConfig(
-            new string(Env.InVpc ? $"https://{Env.DatabaseName}.{Env.Region}.vpc.ots.aliyuncs.com" : $"https://{Env.DatabaseName}.{Env.Region}.ots.aliyuncs.com"),
+            new string(Env.InVpc ? $"https://{Env.DatabaseName}.{Env.Region}.vpc.ots.aliyuncs.com" : $"https://{Env.DatabaseName}.{Env.Region}.tablestore.aliyuncs.com"),
             Env.EffectiveAccessKeyId,
             Env.EffectiveAccessKeySecret,
             Env.DatabaseName,
