@@ -16,10 +16,12 @@ public static class MiscEndpoints
         group.MapMethods("/ping", ["OPTIONS"], Ping);
 
         group.MapGet("/health/db", CheckDb);
+        group.MapMethods("/health/db", ["OPTIONS"], CheckDb);
     }
 
     private static IResult Ping()
     {
+        StatusCode(StatusCodes.Status200OK);
         return Bytes(Serialize(new Pong()), "application/vnd.msgpack");
     }
 

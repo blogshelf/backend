@@ -151,14 +151,18 @@ UserID : BINARY
 
 ## UserID Binary Format
 
-UserID 采用加密二进制格式，最大 1KB，包含注册元数据，用于防伪造：
+UserID 采用二进制格式，固定 8192 字节（8KB），使用 ECIES 加密（ECDH 密钥协商 + AES-GCM），博客所有者可用私钥本地解密验证：
 
 ```text
-[CreatedTimestamp : 8 bytes][ClientIP : 4 bytes][Random : N bytes][Padding]
-
-使用环境变量中的公钥加密，博客所有者可自行解密验证。
-攻击者无法构造有效 UserID，
+[Ephemeral PubKey : 65 bytes][Nonce : 12 bytes][Ciphertext : 8099 bytes][Auth Tag : 16 bytes]
 ```
+
+- Ephemeral PubKey：临时 ECDH P-256 公钥（未压缩格式），用于派生共享密钥
+- Nonce：AES-GCM 随机数（12 字节）
+- Ciphertext：加密后的明文（8099 字节），明文结构为 `[CreatedTimestamp:8][ClientIP:16][Random:8075]`
+- Auth Tag：AES-GCM 认证标签（16 字节）
+
+密钥来源：`OWNER_PUBLIC_KEY` 环境变量（ECDSA P-256 PEM 格式，与 ECDH 可互换使用）。
 
 ## Attributes
 
@@ -217,42 +221,24 @@ CredentialID
 
 ## Fixed Attributes
 
-| Name      | Type    |
-|-----------|---------|
-| UserID    | Binary  |
-| State     | Integer |
-| CreatedAt | Integer |
-| UpdatedAt | Integer |
+| Name      | Type            |
+|-----------|-----------------|
+| UserID    | Binary          |
+| AuthData  | Binary(MsgPack) |
+| State     | Integer         |
+| CreatedAt | Integer         |
+| UpdatedAt | Integer         |
 
-## Dynamic Authentication Columns
+## AuthData Column
 
-每一种认证方式对应一个动态 Binary 属性列。
+固定列名 `AuthData`，类型 Binary(MsgPack)。存储该认证方式的具体数据，结构由 IdentityType 决定：
 
-例如：
+- `srp`：{verifier, salt, iterations}
+- `github`：{subject, ...}
+- `google`：{subject, ...}
+- `passkey`：{credentialId, publicKey, ...}
 
-```
-srp
-```
-
-```
-github
-```
-
-```
-google
-```
-
-```
-passkey
-```
-
-全部存储：
-
-```
-Binary(MsgPack)
-```
-
-程序根据当前登录方式读取对应列，无需反射，无需固定 Schema，未来新增认证方式无需修改数据库结构。
+每行只存自己那个 IdentityType 对应的数据，不再使用动态列名（列名与 IdentityType 重复，冗余）。新增认证方式只需新增 IdentityType 取值，无需修改表结构。
 
 ## Secondary Indexes
 

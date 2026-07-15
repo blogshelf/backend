@@ -1,7 +1,7 @@
 ﻿
 namespace backend.initialization;
 
-public class Logger
+public abstract class Logger
 {
     public static ILoggerFactory LogFactory { get; } = LoggerFactory.Create(builder=> builder.AddConsole());
 }

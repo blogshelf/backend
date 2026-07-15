@@ -66,5 +66,19 @@ public sealed record SrpPublicData
     [Key("length")] public int Length { get; set; } = Params.Length;
     [Key("hash")] public byte[] Hash { get; set; } = [.. Params.Hash];
 }
+
+[MessagePackObject]
+public sealed record SrpRegister
+{
+    [Key("status")] public string Status { get; set; } = "Register.Unavailable";
+    [Key("request_id")] public string RequestId { get; set; } = IdGen.New();
+    [Key("data")] public SrpRegisterData? Data { get; set; } = new();
+}
+
+[MessagePackObject]
+public sealed record SrpRegisterData
+{
+    [Key("User_id")] public byte[] UserId { get; set; } = [];
+}
 /* SRP */
 /* Auth */

@@ -1,4 +1,5 @@
-﻿using Aliyun.Credentials;
+﻿using System.Security.Cryptography;
+using Aliyun.Credentials;
 using Aliyun.Credentials.Models;
 
 namespace backend.initialization;
@@ -6,8 +7,9 @@ namespace backend.initialization;
 public class DotEnv
 {
     private readonly IConfiguration _config;
+    private ECDiffieHellmanPublicKey? _ecdhPublicKey;
 
-    internal DotEnv(IConfiguration config)
+    public DotEnv(IConfiguration config)
     {
         _config = config;
 
@@ -59,5 +61,19 @@ public class DotEnv
 #if DEBUG
     internal string? UserIdPrivateKey => GetOptional("OWNER_PRIVATE_KEY");
 #endif
-    internal string? UserIdPublicKey => GetOptional("OWNER_PUBLIC_KEY");
+    internal string UserIdPublicKey => Get("OWNER_PUBLIC_KEY");
+
+    internal ECDiffieHellmanPublicKey EcdhPublicKey
+    {
+        get
+        {
+            if (_ecdhPublicKey is null)
+            {
+                using var ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
+                ecdh.ImportFromPem(UserIdPublicKey);
+                _ecdhPublicKey = ecdh.PublicKey;
+            }
+            return _ecdhPublicKey;
+        }
+    }
 }
