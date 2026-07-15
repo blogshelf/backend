@@ -175,6 +175,42 @@ UserID 采用二进制格式，固定 8192 字节（8KB），使用 ECIES 加密
 | State          | Integer |
 | CreatedAt      | Integer |
 | UpdatedAt      | Integer |
+| Mail           | String  |
+
+---
+
+# Table: EmailVerification
+
+## Purpose
+
+邮箱验证码，用于激活/重置密码。开启 OTS 表级 TTL 做过期清理。
+
+## Primary Key
+
+Partition Key
+
+```text
+Email : STRING
+```
+
+Primary Key
+
+```text
+Purpose : INTEGER (0=激活, 1=重置密码(预留))
+```
+
+## Attributes
+
+| Name       | Type        |
+|------------|-------------|
+| TokenHash  | Binary      |
+| UserId     | Binary      |
+| CreatedAt  | Integer     |
+
+- TokenHash：SHA256(otp + email_secret)，只存哈希
+- UserId：关联用户
+- CreatedAt：创建时间
+- ExpiresAt：由 OTS 表级 TTL 替代，不设列
 
 ---
 
@@ -291,6 +327,29 @@ SessionID
 | CreatedAt        | Integer         |
 | LastSeenAt       | Integer         |
 | ExpiresAt        | Integer         |
+| SrpState         | Boolean         |
+| SrpB             | Binary          |
+| SrpA             | Binary          |
+| SrpServerSecret  | Binary          |
+
+### SrpState
+
+SRP-6a 握手状态：
+
+- `false` = challenge 已发送（等待客户端 M1）
+- `true` = 已认证（客户端 M1 验证通过）
+
+### SrpB
+
+服务器公钥 B，challenge 时写入，验证通过后由应用层清理。
+
+### SrpA
+
+客户端公钥 A，收到客户端 M1 时写入，验证通过后由应用层清理。
+
+### SrpServerSecret
+
+服务器私钥 `b`，challenge 时写入，验证通过后由应用层清理。
 
 ## Secondary Indexes
 

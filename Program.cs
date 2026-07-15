@@ -2,6 +2,7 @@ using backend.handler;
 using backend.initialization;
 using backend.middleware;
 using backend.models;
+using backend.services;
 using Microsoft.AspNetCore.Http.Json;
 using Scalar.AspNetCore;
 
@@ -12,8 +13,10 @@ builder.Services.AddControllers(options => { options.InputFormatters.Insert(0, n
 builder.Services.AddSingleton<DotEnv>();
 builder.Services.AddSingleton(new Database(builder.Configuration));
 builder.Services.AddSingleton(sp => sp.GetRequiredService<Database>().Client);
+builder.Services.AddSingleton<OtpService>();
+builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
-builder.Services.Configure<JsonOptions>(options => { options.SerializerOptions.AddContext<AppJsonContext>(); });
+builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.AddContext<AppJsonContext>());
 
 var app = builder.Build();
 
@@ -26,6 +29,7 @@ if (app.Environment.IsDevelopment())
 app.UseRequestLocalization(new RequestLocalizationOptions()
     .AddSupportedCultures(["en-US","ja-JP","zh-Hans-CN"])
     .SetDefaultCulture("en-US"));
+app.UseMiddleware<RequestIdMiddleware>();
 app.UseMiddleware<SignVerifyingMiddleware>();
 
 PreExec.Run(app.Services.GetRequiredService<Database>().Client);
@@ -33,5 +37,6 @@ PreExec.Run(app.Services.GetRequiredService<Database>().Client);
 // use module registry
 app.MapMiscEndpoints();
 app.MapSrpEndpoints();
+app.MapVerifyEndpoints();
 
 app.Run();

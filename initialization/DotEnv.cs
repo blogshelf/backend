@@ -7,11 +7,11 @@ namespace backend.initialization;
 public class DotEnv
 {
     private readonly IConfiguration _config;
-    private ECDiffieHellmanPublicKey? _ecdhPublicKey;
 
     public DotEnv(IConfiguration config)
     {
         _config = config;
+        CommitSha = GetOptional("HEAD");
 
         var credConfig = new Config
         {
@@ -33,8 +33,10 @@ public class DotEnv
 
         if (credConfig.Type is not null)
             Credential = new Client(credConfig);
+        
+        
     }
-
+    
     private string Get(string key) =>
         _config.GetSection(key).Value ?? Environment.GetEnvironmentVariable(key) ??
         throw new InvalidOperationException($"必须设置 {key}");
@@ -67,13 +69,22 @@ public class DotEnv
     {
         get
         {
-            if (_ecdhPublicKey is null)
-            {
-                using var ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
-                ecdh.ImportFromPem(UserIdPublicKey);
-                _ecdhPublicKey = ecdh.PublicKey;
-            }
-            return _ecdhPublicKey;
+            if (field is not null) return field;
+            using var ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
+            ecdh.ImportFromPem(UserIdPublicKey);
+            return ecdh.PublicKey;
         }
     }
+
+    private string? CommitSha { get; }
+    public string TablePostFix { get; set; } = "";
+
+    public string EmailSecret => Get("EMAIL_SECRET");
+
+    internal string SmtpHost => GetOptional("SMTP_HOST") ?? "";
+    internal int SmtpPort => int.Parse(GetOptional("SMTP_PORT") ?? "465");
+    internal string SmtpUser => GetOptional("SMTP_USER") ?? "";
+    internal string SmtpPass => GetOptional("SMTP_PASS") ?? "";
+    internal bool SmtpSsl => bool.Parse(GetOptional("SMTP_SSL") ?? "true");
+    internal string SmtpFrom => GetOptional("SMTP_FROM") ?? SmtpUser;
 }

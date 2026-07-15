@@ -60,11 +60,47 @@ namespace backend.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action.Status.Ok.
+        /// </summary>
+        internal static string Action_Status_Ok {
+            get {
+                return ResourceManager.GetString("Action.Status.Ok", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auth.Srp.PublicData.OK.
+        /// </summary>
+        internal static string Auth_Srp_PublicData_OK {
+            get {
+                return ResourceManager.GetString("Auth.Srp.PublicData.OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to error(06570): bio need 18 years to return here..
         /// </summary>
         internal static string Bio_Missing_Default {
             get {
                 return ResourceManager.GetString("Bio.Missing.Default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database.Conn.Online.
+        /// </summary>
+        internal static string Database_Conn_Online {
+            get {
+                return ResourceManager.GetString("Database.Conn.Online", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database.Conn.Unavailable.
+        /// </summary>
+        internal static string Database_Conn_Unavailable {
+            get {
+                return ResourceManager.GetString("Database.Conn.Unavailable", resourceCulture);
             }
         }
         
@@ -87,11 +123,65 @@ namespace backend.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Log.Error.FailedAt.
+        /// </summary>
+        internal static string Log_Error_FailedAt {
+            get {
+                return ResourceManager.GetString("Log.Error.FailedAt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mail.VerifyAccount.SendFail.
+        /// </summary>
+        internal static string Mail_VerifyAccount_SendFail {
+            get {
+                return ResourceManager.GetString("Mail.VerifyAccount.SendFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verify.Mail.SendRatelimited.
+        /// </summary>
+        internal static string Mail_VerifyAccount_SendRatelimited {
+            get {
+                return ResourceManager.GetString("Mail.VerifyAccount.SendRatelimited", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mail.VerifyAccount.Title.
+        /// </summary>
+        internal static string Mail_VerifyAccount_Title {
+            get {
+                return ResourceManager.GetString("Mail.VerifyAccount.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Request.Error.RejectOperation.
         /// </summary>
         internal static string Request_Error_RejectOperation {
             get {
                 return ResourceManager.GetString("Request.Error.RejectOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Response.Error.NoInitialized.
+        /// </summary>
+        internal static string Response_Error_NoInitialized {
+            get {
+                return ResourceManager.GetString("Response.Error.NoInitialized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System.Sttatus.Online.
+        /// </summary>
+        internal static string System_Sttatus_Online {
+            get {
+                return ResourceManager.GetString("System.Sttatus.Online", resourceCulture);
             }
         }
     }

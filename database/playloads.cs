@@ -32,8 +32,10 @@ public class SessionDeviceInfo
 /* Session.DeviceInfo */
 
 /* UserIdentity.AuthData values: MsgPack */
+public interface IAuthData { }
+
 [MessagePackObject]
-public class SrpAuthData
+public class SrpAuthData : IAuthData
 {
     [Key("verifier")] public byte[] Verifier { get; set; } = [];
     [Key("salt")] public byte[] Salt { get; set; } = [];
@@ -41,7 +43,7 @@ public class SrpAuthData
 /* SRP */
 
 [MessagePackObject]
-public class OAuthAuthData
+public class OAuthAuthData : IAuthData
 {
     [Key("subject")] public string Subject { get; set; } = "";
     [Key("username")] public string Username { get; set; } = "";
@@ -50,11 +52,11 @@ public class OAuthAuthData
 /* GitHub / Google OAuth */
 
 [MessagePackObject]
-public class PasskeyAuthData
+public class PasskeyAuthData : IAuthData
 {
     [Key("public_key")] public byte[] PublicKey { get; set; } = [];
     [Key("sign_count")] public int SignCount { get; set; }
-    [Key("credential_id")] public string CredentialID { get; set; } = "";
+    [Key("credential_id")] public string CredentialId { get; set; } = "";
 }
 /* Passkey */
 /* UserIdentity.AuthData */

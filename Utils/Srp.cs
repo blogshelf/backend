@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Security.Cryptography;
+using JetBrains.Annotations;
 
 namespace backend.Utils;
 
@@ -80,6 +81,7 @@ public static class Params
     public static readonly int Length = N.GetByteCount();
 
     public static readonly IReadOnlyList<byte> Hash = Tools.Hash(N,G);
+
 }
 
 public static class Tools
@@ -118,4 +120,39 @@ public static class Tools
             IReadOnlyList<byte> l => l,
             _ => []
         }).ToArray());
+
+    public sealed record LoginReturn
+    {
+       public required byte[] Salt { [UsedImplicitly] get; init; }
+       public required byte[] B { [UsedImplicitly] get; init; }
+       public required byte[] ServerSecret { [UsedImplicitly] get; init; }
+    }
+
+    public static LoginReturn VerifyLogin(string username, byte[] A, byte[] v, byte[] salt)
+    {
+        var bigA = ToBigInt(A);
+
+        if (bigA <= BigInteger.One || bigA >= Params.N - BigInteger.One)
+            throw new ArgumentException("SRP.A.OutOfRange");
+
+        var bBytes = new byte[256];
+        RandomNumberGenerator.Fill(bBytes);
+        var b = ToBigInt(bBytes);
+
+        var k = ToBigInt([.. Params.Hash]);
+        var bigV = ToBigInt(v);
+
+        var gv = BigInteger.ModPow(Params.G, b, Params.N);
+        var B = (k * bigV + gv) % Params.N;
+
+        return new LoginReturn
+        {
+            Salt = salt,
+            B = Pad(B),
+            ServerSecret = Pad(b),
+        };
+    }
+
+    private static BigInteger ToBigInt(byte[] bigEndian)
+        => new(bigEndian.AsSpan(), isUnsigned: true, isBigEndian: true);
 }

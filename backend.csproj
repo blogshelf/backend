@@ -15,6 +15,7 @@
         <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
         <PackageReference Include="Jdenticon-net" Version="3.1.2" />
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
+        <PackageReference Include="MailKit" Version="4.17.0" />
         <PackageReference Include="MessagePack" Version="3.1.7" />
         <PackageReference Include="MessagePack.FSharpExtensions" Version="4.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.5.26302.115" />
@@ -35,6 +36,21 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>lanuage.resx</DependentUpon>
       </Compile>
+    </ItemGroup>
+
+    <Target Name="FetchDisposableEmailDomains" BeforeTargets="CoreCompile"
+            Inputs="$(MSBuildProjectDirectory)/data/disposable_email_blocklist.conf"
+            Outputs="$(MSBuildProjectDirectory)/Generated/DisposableDomains.g.cs">
+        <PropertyGroup>
+            <_PSExe Condition="$([MSBuild]::IsOSPlatform('Windows'))">powershell.exe</_PSExe>
+            <_PSExe Condition="!$([MSBuild]::IsOSPlatform('Windows'))">pwsh</_PSExe>
+        </PropertyGroup>
+        <Exec Command="$(_PSExe) -NoP -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)/scripts/GenerateDisposableDomains.ps1&quot; -OutputDir &quot;$(MSBuildProjectDirectory)/Generated&quot; -FallbackPath &quot;$(MSBuildProjectDirectory)/data/disposable_email_blocklist.conf&quot;" />
+    </Target>
+
+    <ItemGroup>
+        <Compile Remove="Generated/**" />
+        <Compile Include="Generated/DisposableDomains.g.cs" />
     </ItemGroup>
 
 </Project>

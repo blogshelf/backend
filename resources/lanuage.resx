@@ -30,4 +30,34 @@
     <data name="Database.Error.DataConsistency" xml:space="preserve">
         <value>Database.Error.DataConsistency</value>
     </data>
+    <data name="Database.Conn.Online" xml:space="preserve">
+        <value>Database.Conn.Online</value>
+    </data>
+    <data name="Database.Conn.Unavailable" xml:space="preserve">
+        <value>Database.Conn.Unavailable</value>
+    </data>
+    <data name="Auth.Srp.PublicData.OK" xml:space="preserve">
+        <value>Auth.Srp.PublicData.OK</value>
+    </data>
+    <data name="Response.Error.NoInitialized" xml:space="preserve">
+        <value>Response.Error.NoInitialized</value>
+    </data>
+    <data name="System.Sttatus.Online" xml:space="preserve">
+        <value>System.Sttatus.Online</value>
+    </data>
+    <data name="Mail.VerifyAccount.Title" xml:space="preserve">
+        <value>Mail.VerifyAccount.Title</value>
+    </data>
+    <data name="Action.Status.Ok" xml:space="preserve">
+        <value>Action.Status.Ok</value>
+    </data>
+    <data name="Log.Error.FailedAt" xml:space="preserve">
+        <value>Log.Error.FailedAt</value>
+    </data>
+    <data name="Mail.VerifyAccount.SendRatelimited" xml:space="preserve">
+        <value>Verify.Mail.SendRatelimited</value>
+    </data>
+    <data name="Mail.VerifyAccount.SendFail" xml:space="preserve">
+        <value>Mail.VerifyAccount.SendFail</value>
+    </data>
 </root>

@@ -2,34 +2,45 @@
 using Aliyun.OTS;
 using Aliyun.OTS.Request;
 using Ardalis.GuardClauses;
+using backend.initialization;
+using backend.resources;
 using backend.Utils;
 using MessagePack;
 
 namespace backend.models;
-/* Misc */
-[MessagePackObject]
-public sealed record Pong
-{
-    [Key("status")] public string? Status { get; set; } = "System.State.Online";
 
-    [Key("request_id")] public string RequestId { get; set; } = IdGen.New();
+[MessagePackObject]
+public sealed record Response
+{
+    public Response(string? requestId = null)
+    {
+        RequestId = requestId ?? IdGen.New();
+    }
+    [Key("status")] public string Status { get; set; } = lanuage.Response_Error_NoInitialized;
+    [Key("request_id")] public string RequestId { get; }
 }
 
 [MessagePackObject]
-public sealed record DbConnStat
+public sealed record Response<T>
 {
-    [Key("status")] public string Status { get; set; } = "Database.Conn.Unavailable";
-    [Key("request_id")] public string RequestId { get; set; } = IdGen.New();
-    [Key("data")] public TestDbConnData? Data { get; set; } = new();
+    public Response(string? requestId = null)
+    {
+        RequestId = requestId ?? IdGen.New();
+    }
+
+    [Key("status")] public string Status { get; set; } = lanuage.Response_Error_NoInitialized;
+    [Key("request_id")] public string RequestId { get; set; }
+    [Key("data")] public T? Data { get; set; }
 }
 
+/* Data */
 [MessagePackObject]
-public sealed record TestDbConnData
+public sealed record TestDbConn
 {
     [Key("error")] public string? Error { get; set; }
     [Key("tables")] public List<string> Tables { get; set; } = new();
 
-    public TestDbConnData GetTables(OTSClient client)
+    public TestDbConn GetTables(OTSClient client)
     {
         try
         {
@@ -47,19 +58,9 @@ public sealed record TestDbConnData
         return this;
     }
 }
-/* Misc */
 
-/* Auth */
-/* SRP */
 [MessagePackObject]
 public sealed record SrpPublic
-{
-    [Key("status")] public string Status { get; set; } = "Auth.Srp.PublicData.Unavailable";
-    [Key("request_id")] public string RequestId { get; set; } = IdGen.New();
-    [Key("data")] public SrpPublicData Data { get; set; } = new();
-}
-[MessagePackObject]
-public sealed record SrpPublicData
 {
     [Key("N")] public byte[] N { get; set; } = Tools.Pad(Params.N);
     [Key("G")] public BigInteger G { get; set; } = Params.G;
@@ -70,15 +71,14 @@ public sealed record SrpPublicData
 [MessagePackObject]
 public sealed record SrpRegister
 {
-    [Key("status")] public string Status { get; set; } = "Register.Unavailable";
-    [Key("request_id")] public string RequestId { get; set; } = IdGen.New();
-    [Key("data")] public SrpRegisterData? Data { get; set; } = new();
+    [Key("user_id")] public byte[] UserId { get; set; } = [];
 }
 
 [MessagePackObject]
-public sealed record SrpRegisterData
+public sealed record SrpChallenge
 {
-    [Key("User_id")] public byte[] UserId { get; set; } = [];
+    [Key("salt")] public required byte[] Salt { get; init; }
+    [Key("B")] public required byte[] B { get; init; }
+    [Key("token")] public required string Token { get; init; }
 }
-/* SRP */
-/* Auth */
+/* Data */

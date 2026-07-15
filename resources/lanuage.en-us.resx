@@ -23,4 +23,34 @@
     <data name="Database.Error.DataConsistency" xml:space="preserve">
         <value>Data consistency error</value>
     </data>
+    <data name="Database.Conn.Online" xml:space="preserve">
+        <value>database online</value>
+    </data>
+    <data name="Database.Conn.Unavailable" xml:space="preserve">
+        <value>databace offline</value>
+    </data>
+    <data name="Response.Error.NoInitialized" xml:space="preserve">
+        <value>the response is fail to load data</value>
+    </data>
+    <data name="System.Sttatus.Online" xml:space="preserve">
+        <value>System Online</value>
+    </data>
+    <data name="Mail.VerifyAccount.Title" xml:space="preserve">
+        <value>BlogShelf&gt;&gt; Verification</value>
+    </data>
+    <data name="Log.Error.FailedAt" xml:space="preserve">
+        <value>{0} failed</value>
+    </data>
+    <data name="Action.Status.Ok" xml:space="preserve">
+        <value>action complete</value>
+    </data>
+    <data name="Mail.VerifyAccount.SendFail" xml:space="preserve">
+        <value>verify mail send failed</value>
+    </data>
+    <data name="Mail.VerifyAccount.SendRatelimited" xml:space="preserve">
+        <value>DONT POST IT FOR NOW!</value>
+    </data>
+    <data name="Auth.Srp.PublicData.OK" xml:space="preserve">
+        <value>send srp pulic data sessfull</value>
+    </data>
 </root>

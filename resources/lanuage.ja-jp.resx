@@ -23,4 +23,13 @@
     <data name="Database.Error.DataConsistency" xml:space="preserve">
         <value>データ整合性エラー</value>
     </data>
+    <data name="Database.Conn.Online" xml:space="preserve">
+        <value>データベースオンライン</value>
+    </data>
+    <data name="Database.Conn.Unavailable" xml:space="preserve">
+        <value>データベースのオフライン</value>
+    </data>
+    <data name="Log.Error.FailedAt" xml:space="preserve">
+        <value>{0} に失敗しました</value>
+    </data>
 </root>

@@ -23,4 +23,34 @@
     <data name="Database.Error.DataConsistency" xml:space="preserve">
         <value>数据一致性异常</value>
     </data>
+    <data name="Database.Conn.Online" xml:space="preserve">
+        <value>数据库在线</value>
+    </data>
+    <data name="Database.Conn.Unavailable" xml:space="preserve">
+        <value>数据库离线</value>
+    </data>
+    <data name="Response.Error.NoInitialized" xml:space="preserve">
+        <value>回复没有正确载入数据</value>
+    </data>
+    <data name="System.Sttatus.Online" xml:space="preserve">
+        <value>服务在线</value>
+    </data>
+    <data name="Mail.VerifyAccount.Title" xml:space="preserve">
+        <value>博库>> 邮件验证</value>
+    </data>
+    <data name="Log.Error.FailedAt" xml:space="preserve">
+        <value>{0} 执行失败</value>
+    </data>
+    <data name="Action.Status.Ok" xml:space="preserve">
+        <value>操作成功</value>
+    </data>
+    <data name="Mail.VerifyAccount.SendFail" xml:space="preserve">
+        <value>验证邮件发送失败</value>
+    </data>
+    <data name="Mail.VerifyAccount.SendRatelimited" xml:space="preserve">
+        <value>别 发 了 ！</value>
+    </data>
+    <data name="Auth.Srp.PublicData.OK" xml:space="preserve">
+        <value>发送协商数据成功</value>
+    </data>
 </root>

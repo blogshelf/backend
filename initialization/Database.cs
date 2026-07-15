@@ -6,7 +6,7 @@ namespace backend.initialization;
 public class Database
 {
     public static ILogger LoggerInstance { get; } = Logger.LogFactory.CreateLogger("");
-    public DotEnv Env { get; }
+    private DotEnv Env { get; }
     public OTSClient Client { get; }
 
     public Database(IConfiguration config)

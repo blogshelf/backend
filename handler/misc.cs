@@ -1,8 +1,7 @@
 ﻿using Aliyun.OTS;
 using backend.models;
+using backend.resources;
 using backend.Utils;
-using static MessagePack.MessagePackSerializer;
-using static Microsoft.AspNetCore.Http.Results;
 
 namespace backend.handler;
 
@@ -13,29 +12,21 @@ public static class MiscEndpoints
         var group = app.MapGroup("/misc");
 
         group.MapGet("/ping", Ping);
-        group.MapMethods("/ping", ["OPTIONS"], Ping);
-
         group.MapGet("/health/db", CheckDb);
-        group.MapMethods("/health/db", ["OPTIONS"], CheckDb);
     }
 
-    private static IResult Ping()
+    private static IResult Ping(HttpContext ctx) => Http.MsgPack(new Response(ctx.GetRequestId())
     {
-        StatusCode(StatusCodes.Status200OK);
-        return Bytes(Serialize(new Pong()), "application/vnd.msgpack");
-    }
+        Status = lanuage.System_Sttatus_Online,
+    });
 
-    private static IResult CheckDb(OTSClient client)
+    private static IResult CheckDb(OTSClient client, HttpContext ctx)
     {
-        var data = new TestDbConnData().GetTables(client);
-
-        var resp = new DbConnStat
+        var data = new TestDbConn().GetTables(client);
+        return Http.MsgPack(new Response<TestDbConn>(ctx.GetRequestId())
         {
-            RequestId = IdGen.New(),
-            Status = data.Error is null ? "Database.Conn.Online" : "Database.Conn.Unavailable",
+            Status = data.Error is null ? lanuage.Database_Conn_Online : lanuage.Database_Conn_Unavailable,
             Data = data,
-        };
-
-        return Bytes(Serialize(resp), "application/vnd.msgpack");
+        });
     }
 }
