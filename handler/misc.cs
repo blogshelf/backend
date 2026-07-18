@@ -15,10 +15,13 @@ public static class MiscEndpoints
         group.MapGet("/health/db", CheckDb);
     }
 
-    private static IResult Ping(HttpContext ctx) => Http.MsgPack(new Response(ctx.GetRequestId())
+    private static IResult Ping(HttpContext ctx)
     {
-        Status = lanuage.System_Sttatus_Online,
-    });
+        return Http.MsgPack(new Response(ctx.GetRequestId())
+        {
+            Status = lanuage.System_Sttatus_Online
+        });
+    }
 
     private static IResult CheckDb(OTSClient client, HttpContext ctx)
     {
@@ -26,7 +29,7 @@ public static class MiscEndpoints
         return Http.MsgPack(new Response<TestDbConn>(ctx.GetRequestId())
         {
             Status = data.Error is null ? lanuage.Database_Conn_Online : lanuage.Database_Conn_Unavailable,
-            Data = data,
+            Data = data
         });
     }
 }

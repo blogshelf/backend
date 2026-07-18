@@ -30,6 +30,7 @@ public class SignVerifyingMiddleware(RequestDelegate next)
 
             context.Items[SignatureVerifiedKey] = true;
         }
+
         await next(context);
     }
 }

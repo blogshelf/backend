@@ -18,10 +18,18 @@ public sealed record VerifyForMail
 }
 
 [MessagePackObject]
-public sealed record LoginSrp
+public sealed record LoginSrpStart
 {
     [Key("username")] public required string Username { get; init; }
     [Key("A")] public required byte[] A { get; init; }
     [Key("otp_token")] public byte[]? OtpToken { get; init; }
     [Key("mail")] public string? Mail { get; init; }
+}
+
+[MessagePackObject]
+public sealed record LoginSrpComplete
+{
+    [Key("token")] public required byte[] Token { get; init; }
+    [Key("M")] public required byte[] M { get; init; }
+    [Key("user_id")] public required byte[] UserId { get; init; }
 }

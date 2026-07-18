@@ -1,5 +1,4 @@
 using MessagePack;
-using Microsoft.AspNetCore.Http;
 
 namespace backend.Utils;
 

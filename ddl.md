@@ -201,11 +201,11 @@ Purpose : INTEGER (0=激活, 1=重置密码(预留))
 
 ## Attributes
 
-| Name       | Type        |
-|------------|-------------|
-| TokenHash  | Binary      |
-| UserId     | Binary      |
-| CreatedAt  | Integer     |
+| Name      | Type    |
+|-----------|---------|
+| TokenHash | Binary  |
+| UserId    | Binary  |
+| CreatedAt | Integer |
 
 - TokenHash：SHA256(otp + email_secret)，只存哈希
 - UserId：关联用户
@@ -274,7 +274,8 @@ CredentialID
 - `google`：{subject, ...}
 - `passkey`：{credentialId, publicKey, ...}
 
-每行只存自己那个 IdentityType 对应的数据，不再使用动态列名（列名与 IdentityType 重复，冗余）。新增认证方式只需新增 IdentityType 取值，无需修改表结构。
+每行只存自己那个 IdentityType 对应的数据，不再使用动态列名（列名与 IdentityType 重复，冗余）。新增认证方式只需新增
+IdentityType 取值，无需修改表结构。
 
 ## Secondary Indexes
 

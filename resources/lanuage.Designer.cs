@@ -69,6 +69,15 @@ namespace backend.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Auth.Login.NotFound.
+        /// </summary>
+        internal static string Auth_Login_NotFound {
+            get {
+                return ResourceManager.GetString("Auth.Login.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Auth.Srp.PublicData.OK.
         /// </summary>
         internal static string Auth_Srp_PublicData_OK {

@@ -16,8 +16,10 @@ public class OtpService(OTSClient client)
         return bytes;
     }
 
-    private byte[] HashOtp(byte[] otp) =>
-        SHA256.HashData(otp);
+    private byte[] HashOtp(byte[] otp)
+    {
+        return SHA256.HashData(otp);
+    }
 
     public void Store(string email, byte[] userId, byte[] otp)
     {
@@ -27,7 +29,7 @@ public class OtpService(OTSClient client)
             Purpose = 0,
             TokenHash = HashOtp(otp),
             UserId = userId,
-            CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         }.Create(client);
     }
 
@@ -42,6 +44,7 @@ public class OtpService(OTSClient client)
         {
             return OtpVerifyResult.NotFound;
         }
+
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         if (ev.TokenHash is null)
@@ -64,6 +67,7 @@ public class OtpService(OTSClient client)
         {
             return null;
         }
+
         return ev.UserId;
     }
 
@@ -78,7 +82,9 @@ public class OtpService(OTSClient client)
         {
             return false;
         }
-        return ev.CreatedAt is not null && DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - ev.CreatedAt.Value < RateLimitMs;
+
+        return ev.CreatedAt is not null &&
+               DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - ev.CreatedAt.Value < RateLimitMs;
     }
 
     public void Delete(string email)

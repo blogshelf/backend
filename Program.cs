@@ -3,6 +3,7 @@ using backend.initialization;
 using backend.middleware;
 using backend.models;
 using backend.services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Json;
 using Scalar.AspNetCore;
 
@@ -16,6 +17,9 @@ builder.Services.AddSingleton(sp => sp.GetRequiredService<Database>().Client);
 builder.Services.AddSingleton<OtpService>();
 builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
+builder.Services.AddAuthentication("Session")
+    .AddScheme<AuthenticationSchemeOptions, SessionAuthHandler>("Session", _ => { });
+
 builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.AddContext<AppJsonContext>());
 
 var app = builder.Build();
@@ -27,10 +31,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRequestLocalization(new RequestLocalizationOptions()
-    .AddSupportedCultures(["en-US","ja-JP","zh-Hans-CN"])
+    .AddSupportedCultures("en-US", "ja-JP", "zh-Hans-CN")
     .SetDefaultCulture("en-US"));
 app.UseMiddleware<RequestIdMiddleware>();
 app.UseMiddleware<SignVerifyingMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
 
 PreExec.Run(app.Services.GetRequiredService<Database>().Client);
 

@@ -32,7 +32,9 @@ public class SessionDeviceInfo
 /* Session.DeviceInfo */
 
 /* UserIdentity.AuthData values: MsgPack */
-public interface IAuthData { }
+public interface IAuthData
+{
+}
 
 [MessagePackObject]
 public class SrpAuthData : IAuthData

@@ -2,8 +2,8 @@
 using Aliyun.OTS.DataModel;
 using Aliyun.OTS.DataModel.ConditionalUpdate;
 using Aliyun.OTS.Request;
+using backend.exceptions;
 using MessagePack;
-using Org.BouncyCastle.Asn1.Ocsp;
 using Tea.Utils;
 using Condition = Aliyun.OTS.DataModel.Condition;
 using DeleteRowRequest = Aliyun.OTS.Request.DeleteRowRequest;
@@ -125,17 +125,17 @@ public class User
     {
         var batchGetRowRequest = new BatchGetRowRequest();
         batchGetRowRequest.Add(TableName, [
-            new()
+            new PrimaryKey
             {
                 { "PermissionCode", new ColumnValue(0) },
                 { "UserID", new ColumnValue(UserId) }
             },
-            new()
+            new PrimaryKey
             {
                 { "PermissionCode", new ColumnValue(1) },
                 { "UserID", new ColumnValue(UserId) }
             },
-            new()
+            new PrimaryKey
             {
                 { "PermissionCode", new ColumnValue(2) },
                 { "UserID", new ColumnValue(UserId) }
@@ -145,24 +145,23 @@ public class User
         var result = new Dictionary<byte[], int>();
         foreach (var row in resp.RowDataGroupByTable[TableName])
         {
-            if (!row.IsOK)
-            {
-                continue;
-            }
+            if (!row.IsOK) continue;
             result[row.PrimaryKey["UserID"].AsBinary()] = row.PrimaryKey["PermissionCode"].AsLong().ToSafeInt()!.Value;
         }
+
         return result;
     }
+
     public User GetSingle(OTSClient client)
     {
-        if (PermissionCode < 0) throw new IOException("Database.User.BadPermission");
+        if (PermissionCode < 0) throw new ValidationException("Database.User.BadPermission");
         var row = client.GetRow(new GetRowRequest(TableName, new PrimaryKey
         {
             { "PermissionCode", new ColumnValue(PermissionCode) },
             { "UserID", new ColumnValue(UserId) }
         })).Row;
         if (row.GetColumns().Length == 0)
-            throw new IOException("Database.User.NotFound");
+            throw new NotFoundException("Database.User.NotFound");
         foreach (var col in row.GetColumns())
             switch (col.Name)
             {
@@ -177,7 +176,7 @@ public class User
                     continue;
                 case "State":
                     State = col.Value.AsLong().ToSafeInt() ??
-                            throw new InvalidDataException("User.GetSingle.State.OutOfRange");
+                            throw new ValidationException("User.GetSingle.State.OutOfRange");
                     continue;
                 case "CreatedAt":
                     CreatedAt = col.Value.AsLong();
@@ -195,14 +194,14 @@ public class User
 
     public User GetSingle(OTSClient client, int permission)
     {
-        if (permission < 0) throw new IOException("Database.User.BadPermission");
+        if (permission < 0) throw new ValidationException("Database.User.BadPermission");
         var row = client.GetRow(new GetRowRequest(TableName, new PrimaryKey
         {
             { "PermissionCode", new ColumnValue(permission) },
             { "UserID", new ColumnValue(UserId) }
         })).Row;
         if (row.GetColumns().Length == 0)
-            throw new IOException("Database.User.NotFound");
+            throw new NotFoundException("Database.User.NotFound");
         foreach (var col in row.GetColumns())
             switch (col.Name)
             {
@@ -217,7 +216,7 @@ public class User
                     continue;
                 case "State":
                     State = col.Value.AsLong().ToSafeInt() ??
-                            throw new InvalidDataException("User.GetSingle.State.OutOfRange");
+                            throw new ValidationException("User.GetSingle.State.OutOfRange");
                     continue;
                 case "CreatedAt":
                     CreatedAt = col.Value.AsLong();
@@ -281,9 +280,9 @@ public class User
 
     public void ActiveAccount(OTSClient client)
     {
-        if (State != 0) throw new IOException("Database.User.BadState");
-        if (PermissionCode is > 1 or < 0) throw new IOException("Database.User.BadPermission");
-        if (UserId.Length == 0) throw new IOException("Database.User.IllegalValue.UserID");
+        if (State != 0) throw new ValidationException("Database.User.BadState");
+        if (PermissionCode is > 1 or < 0) throw new ValidationException("Database.User.BadPermission");
+        if (UserId.Length == 0) throw new ValidationException("Database.User.IllegalValue.UserID");
 
         var updateOfAttribute = new UpdateOfAttribute();
         updateOfAttribute.AddAttributeColumnToPut("State", new ColumnValue(1));
@@ -310,7 +309,7 @@ public class User
 
     public void BanAccount(OTSClient client)
     {
-        if (UserId.Length == 0) throw new IOException("Database.User.IllegalValue,UserID");
+        if (UserId.Length == 0) throw new ValidationException("Database.User.IllegalValue.UserID");
         var updateOfAttribute = new UpdateOfAttribute();
         updateOfAttribute.AddAttributeColumnToPut("State", new ColumnValue(2));
         updateOfAttribute.AddAttributeColumnToPut("UpdatedAt",
@@ -339,16 +338,16 @@ public class User
     {
         try
         {
-            if (State is not (0 or 1)) throw new IOException("Database.User.BadState");
-            if (PermissionCode is < 0 or > 1) throw new IOException("Database.User.BadPermission");
-            if (UserId.Length == 0) throw new IOException("Database.User.IllegalValue.UserID");
+            if (State is not (0 or 1)) throw new ValidationException("Database.User.BadState");
+            if (PermissionCode is < 0 or > 1) throw new ValidationException("Database.User.BadPermission");
+            if (UserId.Length == 0) throw new ValidationException("Database.User.IllegalValue.UserID");
             var updateOfAttribute = new UpdateOfAttribute();
-            if (updates == null && deletes == null) throw new IOException("Database.User.EmptyRequest");
+            if (updates == null && deletes == null) throw new ValidationException("Database.User.EmptyRequest");
 
             if (updates != null)
             {
                 if (updates.ContainsKey("UserID") || updates.ContainsKey("CreateAt") || updates.ContainsKey("UpdateAt"))
-                    throw new IOException("Database.User.Update.Denied");
+                    throw new ConflictException("Database.User.Update.Denied");
                 foreach (var col in updates) updateOfAttribute.AddAttributeColumnToPut(col.Key, col.Value);
             }
 
@@ -357,7 +356,7 @@ public class User
             {
                 if (deletes.Contains("UserID") || deletes.Contains("CreateAt") || deletes.Contains("UpdateAt") ||
                     deletes.Contains("Mail"))
-                    throw new IOException("Database.User.Delete.Denied");
+                    throw new ConflictException("Database.User.Delete.Denied");
                 foreach (var target in deletes) updateOfAttribute.AddAttributeColumnToDelete(target);
             }
 
@@ -414,7 +413,7 @@ public class EmailVerification
             { "Purpose", new ColumnValue(Purpose) }
         }));
         if (resp.Row.GetColumns().Length == 0)
-            throw new IOException("Database.EmailVerification.NotFound");
+            throw new NotFoundException("Database.EmailVerification.NotFound");
         foreach (var col in resp.Row.GetColumns())
             switch (col.Name)
             {
@@ -473,9 +472,10 @@ public class UserIdentity
                                                    _ => ""
                                                };
 
-    public string IdentityType { get; init; } = "";
+    public string IdentityType { get; set; } = "";
     public string IdentityKey { get; set; } = "";
     public byte[] UserId { get; set; } = [];
+
     /// <summary>
     ///     0 normal
     ///     1 suspicious
@@ -483,6 +483,7 @@ public class UserIdentity
     ///     3 security banned
     /// </summary>
     public int State { get; set; }
+
     public long CreatedAt { get; set; }
     public long UpdatedAt { get; set; }
 
@@ -502,7 +503,7 @@ public class UserIdentity
     {
         return AuthData.Any()
             ? Deserialize<T>(AuthData)
-            : throw new InvalidDataException("UserIdentity.AuthUnmarshal.Null");
+            : throw new ValidationException("UserIdentity.AuthUnmarshal.Null");
     }
 
     public void Create(OTSClient client)
@@ -520,7 +521,7 @@ public class UserIdentity
                     "UserID",
                     UserId.Length > 0
                         ? new ColumnValue(UserId)
-                        : throw new InvalidDataException("UserIdentity.Create.UserId.Empty")
+                        : throw new ValidationException("UserIdentity.Create.UserId.Empty")
                 },
                 { "AuthData", new ColumnValue(AuthData) }
             }));
@@ -539,7 +540,7 @@ public class UserIdentity
             { "IdentityKey", new ColumnValue(IdentityKey) }
         }, ["AuthData", "UserID"], cond));
         if (resp.Row.GetColumns().Length == 0)
-            throw new IOException("UserIdentity.Read.AuthData.Failed");
+            throw new NotFoundException("UserIdentity.Read.AuthData.Failed");
         foreach (var col in resp.Row.GetColumns())
             switch (col.Name)
             {
@@ -550,6 +551,7 @@ public class UserIdentity
                     UserId = col.Value.AsBinary();
                     break;
             }
+
         return AuthUnmarshal<T>();
     }
 }
@@ -567,8 +569,7 @@ public class Session
                                                };
 
     public byte[] UserId { get; set; } = [];
-    public string SessionId { get; set; } = "";
-    public byte[] RefreshTokenHash { get; set; } = [];
+    public byte[] SessionId { get; set; } = [];
     public byte[] DeviceInfo { get; set; } = [];
     public byte[] IpHash { get; set; } = [];
     public string UserAgent { get; set; } = "";
@@ -581,9 +582,11 @@ public class Session
     ///     true = authenticated
     /// </summary>
     public bool SrpState { get; set; }
+
     public byte[] SrpB { get; set; } = [];
     public byte[] SrpA { get; set; } = [];
     public byte[] SrpServerSecret { get; set; } = [];
+    public byte[] Seed { get; set; } = [];
 
     public void Create(OTSClient client)
     {
@@ -598,7 +601,6 @@ public class Session
                 },
                 new AttributeColumns
                 {
-                    { "RefreshTokenHash", new ColumnValue(RefreshTokenHash) },
                     { "DeviceInfo", new ColumnValue(DeviceInfo) },
                     { "IPHash", new ColumnValue(IpHash) },
                     { "UserAgent", new ColumnValue(UserAgent) },
@@ -608,7 +610,8 @@ public class Session
                     { "SrpState", new ColumnValue(SrpState) },
                     { "SrpB", new ColumnValue(SrpB) },
                     { "SrpA", new ColumnValue(SrpA) },
-                    { "SrpServerSecret", new ColumnValue(SrpServerSecret) }
+                    { "SrpServerSecret", new ColumnValue(SrpServerSecret) },
+                    { "Seed", new ColumnValue(Seed) }
                 }));
         }
         catch (Exception e)
@@ -626,13 +629,10 @@ public class Session
             { "SessionID", new ColumnValue(SessionId) }
         }));
         if (resp.Row.GetColumns().Length == 0)
-            throw new IOException("Database.Session.NotFound");
+            throw new NotFoundException("Database.Session.NotFound");
         foreach (var col in resp.Row.GetColumns())
             switch (col.Name)
             {
-                case "RefreshTokenHash":
-                    RefreshTokenHash = col.Value.AsBinary();
-                    continue;
                 case "DeviceInfo":
                     DeviceInfo = col.Value.AsBinary();
                     continue;
@@ -663,16 +663,20 @@ public class Session
                 case "SrpServerSecret":
                     SrpServerSecret = col.Value.AsBinary();
                     continue;
+                case "Seed":
+                    Seed = col.Value.AsBinary();
+                    continue;
             }
+
         return this;
     }
 
-    public void UpdateToAuthenticated(OTSClient client, byte[] refreshTokenHash)
+    public void UpdateToAuthenticated(OTSClient client, byte[] seed)
     {
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var updateOfAttribute = new UpdateOfAttribute();
         updateOfAttribute.AddAttributeColumnToPut("SrpState", new ColumnValue(true));
-        updateOfAttribute.AddAttributeColumnToPut("RefreshTokenHash", new ColumnValue(refreshTokenHash));
+        updateOfAttribute.AddAttributeColumnToPut("Seed", new ColumnValue(seed));
         updateOfAttribute.AddAttributeColumnToPut("LastSeenAt", new ColumnValue(now));
         updateOfAttribute.AddAttributeColumnToPut("ExpiresAt", new ColumnValue(now + 30L * 24 * 60 * 60 * 1000));
         client.UpdateRow(new UpdateRowRequest(TableName, new Condition
@@ -686,6 +690,57 @@ public class Session
                     PassIfMissing = false,
                     LatestVersionsOnly = true
                 }
+            },
+            new PrimaryKey
+            {
+                { "UserID", new ColumnValue(UserId) },
+                { "SessionID", new ColumnValue(SessionId) }
+            }, updateOfAttribute));
+    }
+
+    public async void CleanUpSrpData(OTSClient client)
+    {
+        try
+        {
+            var updateOfAttribute = new UpdateOfAttribute();
+            updateOfAttribute.AddAttributeColumnToDelete("SrpA");
+            updateOfAttribute.AddAttributeColumnToDelete("SrpB");
+            updateOfAttribute.AddAttributeColumnToDelete("SrpServerSecret");
+            updateOfAttribute.AddAttributeColumnToPut("LastSeenAt",
+                new ColumnValue(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+            await client.UpdateRowAsync(new UpdateRowRequest(TableName,
+                new Condition(RowExistenceExpectation.EXPECT_EXIST), new PrimaryKey
+                {
+                    { "UserID", new ColumnValue(UserId) },
+                    { "SessionID", new ColumnValue(SessionId) }
+                }, updateOfAttribute));
+        }
+        catch (Exception e)
+        {
+#if DEBUG
+            Console.WriteLine(e.StackTrace);
+#endif
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    public void UpdateSeed(OTSClient client, byte[] oldSeed, byte[] newSeed)
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var updateOfAttribute = new UpdateOfAttribute();
+        updateOfAttribute.AddAttributeColumnToPut("Seed", new ColumnValue(newSeed));
+        updateOfAttribute.AddAttributeColumnToPut("LastSeenAt", new ColumnValue(now));
+        var cond = new CompositeCondition(LogicOperator.AND);
+        cond.AddCondition(new RelationalCondition(
+                "SrpState", CompareOperator.EQUAL, new ColumnValue(true))
+            { PassIfMissing = false, LatestVersionsOnly = true });
+        cond.AddCondition(new RelationalCondition(
+                "Seed", CompareOperator.EQUAL, new ColumnValue(oldSeed))
+            { PassIfMissing = false, LatestVersionsOnly = true });
+        client.UpdateRow(new UpdateRowRequest(TableName, new Condition
+            {
+                RowExistenceExpect = RowExistenceExpectation.EXPECT_EXIST,
+                ColumnCondition = cond
             },
             new PrimaryKey
             {

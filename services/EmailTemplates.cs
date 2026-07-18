@@ -4,10 +4,6 @@ namespace backend.services;
 
 public static class EmailTemplates
 {
-    public static string OtpVerification(string emojiCode) => OtpTemplate.Replace("__CODE__",emojiCode);
-
-    public static string OtpVerification(byte[] code) => OtpTemplate.Replace("__CODE__", EmojiCodec.Encode(code));
-
     private static string OtpTemplate =>
         """
         <!DOCTYPE html>
@@ -208,4 +204,14 @@ public static class EmailTemplates
         </body>
         </html>
         """;
+
+    public static string OtpVerification(string emojiCode)
+    {
+        return OtpTemplate.Replace("__CODE__", emojiCode);
+    }
+
+    public static string OtpVerification(byte[] code)
+    {
+        return OtpTemplate.Replace("__CODE__", EmojiCodec.Encode(code));
+    }
 }

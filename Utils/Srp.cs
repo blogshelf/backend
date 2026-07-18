@@ -1,6 +1,8 @@
 using System.Numerics;
 using System.Security.Cryptography;
+using System.Text;
 using JetBrains.Annotations;
+using MessagePack;
 
 namespace backend.Utils;
 
@@ -80,8 +82,7 @@ public static class Params
 
     public static readonly int Length = N.GetByteCount();
 
-    public static readonly IReadOnlyList<byte> Hash = Tools.Hash(N,G);
-
+    public static readonly IReadOnlyList<byte> Hash = Tools.Hash(N, G);
 }
 
 public static class Tools
@@ -101,34 +102,35 @@ public static class Tools
         Buffer.BlockCopy(bigEndian, 0, result, Params.Length - bigEndian.Length, bigEndian.Length);
         return result;
     }
-    
-    public static byte[] Hash(params byte[][] parts) =>
-        SHA512.HashData(parts.SelectMany(p => p).ToArray());
 
-    public static byte[] Hash(params IReadOnlyList<byte>[] parts) =>
-        SHA512.HashData(parts.SelectMany(p => p).ToArray());
+    public static byte[] Hash(params byte[][] parts)
+    {
+        return SHA512.HashData(parts.SelectMany(p => p).ToArray());
+    }
 
-    public static byte[] Hash(params BigInteger[] parts) =>
-        SHA512.HashData(parts.SelectMany(x => Pad(x)).ToArray());
-    
+    public static byte[] Hash(params IReadOnlyList<byte>[] parts)
+    {
+        return SHA512.HashData(parts.SelectMany(p => p).ToArray());
+    }
+
+    public static byte[] Hash(params BigInteger[] parts)
+    {
+        return SHA512.HashData(parts.SelectMany(x => Pad(x)).ToArray());
+    }
+
     // warning: this is heavy
-    public static byte[] Hash<T>(params T[] parts) =>
-        SHA512.HashData(parts.SelectMany(p => p switch
+    public static byte[] Hash<T>(params T[] parts)
+    {
+        return SHA512.HashData(parts.SelectMany(p => p switch
         {
             byte[] b => b,
             BigInteger bi => Pad(bi),
             IReadOnlyList<byte> l => l,
             _ => []
         }).ToArray());
-
-    public sealed record LoginReturn
-    {
-       public required byte[] Salt { [UsedImplicitly] get; init; }
-       public required byte[] B { [UsedImplicitly] get; init; }
-       public required byte[] ServerSecret { [UsedImplicitly] get; init; }
     }
 
-    public static LoginReturn VerifyLogin(string username, byte[] A, byte[] v, byte[] salt)
+    public static LoginBeginReturn VerifyLoginBegin(string username, byte[] A, byte[] v, byte[] salt)
     {
         var bigA = ToBigInt(A);
 
@@ -137,22 +139,77 @@ public static class Tools
 
         var bBytes = new byte[256];
         RandomNumberGenerator.Fill(bBytes);
-        var b = ToBigInt(bBytes);
 
-        var k = ToBigInt([.. Params.Hash]);
-        var bigV = ToBigInt(v);
-
-        var gv = BigInteger.ModPow(Params.G, b, Params.N);
-        var B = (k * bigV + gv) % Params.N;
-
-        return new LoginReturn
+        return new LoginBeginReturn
         {
             Salt = salt,
-            B = Pad(B),
-            ServerSecret = Pad(b),
+            B = Pad(
+                (ToBigInt([.. Params.Hash]) * ToBigInt(v) + BigInteger.ModPow(Params.G, ToBigInt(bBytes), Params.N)) %
+                Params.N),
+            ServerSecret = Pad(ToBigInt(bBytes))
         };
     }
 
+    public static byte[] ComputeK(byte[] A, byte[] v, byte[] serverSecret, byte[] B)
+    {
+        return Hash(Pad(BigInteger.ModPow((ToBigInt(A) *
+                                           BigInteger.ModPow(ToBigInt(v),
+                                               ToBigInt(Hash(Pad(A),
+                                                   Pad(B))),
+                                               Params.N)) %
+                                          Params.N,
+            ToBigInt(serverSecret),
+            Params.N)));
+    }
+
+    public static byte[] ComputeClientM1(string username,
+        byte[] salt,
+        byte[] A,
+        byte[] B,
+        byte[] K)
+    {
+        return Hash(Hash(Params.N)
+                .Zip(Hash(Params.G),
+                    (a,
+                        b) => (byte)(a ^ b))
+                .ToArray(),
+            SHA512.HashData(Encoding.UTF8.GetBytes(username)),
+            salt,
+            A,
+            B,
+            K);
+    }
+
+    public static bool VerifyClientProof(string username, byte[] salt, byte[] A, byte[] B, byte[] K, byte[] clientM1)
+    {
+        return CryptographicOperations.FixedTimeEquals(clientM1,
+            ComputeClientM1(username, salt, A, B, K));
+    }
+
+    public static byte[] ComputeServerProof(byte[] A, byte[] M1, byte[] K)
+    {
+        return Hash(Pad(A), M1, K);
+    }
+
     private static BigInteger ToBigInt(byte[] bigEndian)
-        => new(bigEndian.AsSpan(), isUnsigned: true, isBigEndian: true);
+    {
+        return new BigInteger(bigEndian.AsSpan(), true, true);
+    }
+
+    public sealed record LoginBeginReturn
+    {
+        public required byte[] Salt { [UsedImplicitly] get; init; }
+        public required byte[] B { [UsedImplicitly] get; init; }
+        public required byte[] ServerSecret { [UsedImplicitly] get; init; }
+    }
+
+    [MessagePackObject]
+    public sealed record LoginCompleteReturn
+    {
+        [Key("proofed")] public required bool Proofed { [UsedImplicitly] get; init; }
+
+        [Key("server_proof")] public required byte[]? ServerProof { [UsedImplicitly] get; init; }
+
+        [Key("encrypted_seed")] public required byte[]? EncryptedSeed { [UsedImplicitly] get; init; }
+    }
 }

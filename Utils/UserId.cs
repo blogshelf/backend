@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Buffers.Binary;
+using System.Security.Cryptography;
 
 namespace backend.Utils;
 
@@ -14,7 +14,8 @@ public static class UserId
     private const int Overhead = EphemeralPubKeySize + NonceSize + TagSize;
     private const int PlaintextSize = Size - Overhead;
 
-    public static byte[] Generate(DateTimeOffset timestamp, byte[] clientIp, ECDiffieHellmanPublicKey recipientPublicKey)
+    public static byte[] Generate(DateTimeOffset timestamp, byte[] clientIp,
+        ECDiffieHellmanPublicKey recipientPublicKey)
     {
         var plaintext = new byte[PlaintextSize];
 

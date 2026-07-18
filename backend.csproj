@@ -10,32 +10,32 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AlibabaCloud.SDK.Sts20150401" Version="1.2.0" />
-        <PackageReference Include="Aliyun.TableStore.SDK" Version="6.1.0" />
-        <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
-        <PackageReference Include="Jdenticon-net" Version="3.1.2" />
-        <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
-        <PackageReference Include="MailKit" Version="4.17.0" />
-        <PackageReference Include="MessagePack" Version="3.1.7" />
-        <PackageReference Include="MessagePack.FSharpExtensions" Version="4.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.5.26302.115" />
-        <PackageReference Include="Nanoid" Version="3.1.0" />
-        <PackageReference Include="Scalar.AspNetCore" Version="2.16.12" />
+        <PackageReference Include="AlibabaCloud.SDK.Sts20150401" Version="1.2.0"/>
+        <PackageReference Include="Aliyun.TableStore.SDK" Version="6.1.0"/>
+        <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0"/>
+        <PackageReference Include="Jdenticon-net" Version="3.1.2"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2026.2.0"/>
+        <PackageReference Include="MailKit" Version="4.17.0"/>
+        <PackageReference Include="MessagePack" Version="3.1.7"/>
+        <PackageReference Include="MessagePack.FSharpExtensions" Version="4.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.5.26302.115"/>
+        <PackageReference Include="Nanoid" Version="3.1.0"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.16.12"/>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="resources\lanuage.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>lanuage.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
+        <EmbeddedResource Update="resources\lanuage.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>lanuage.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="resources\lanuage.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>lanuage.resx</DependentUpon>
-      </Compile>
+        <Compile Update="resources\lanuage.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>lanuage.resx</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <Target Name="FetchDisposableEmailDomains" BeforeTargets="CoreCompile"
@@ -45,12 +45,12 @@
             <_PSExe Condition="$([MSBuild]::IsOSPlatform('Windows'))">powershell.exe</_PSExe>
             <_PSExe Condition="!$([MSBuild]::IsOSPlatform('Windows'))">pwsh</_PSExe>
         </PropertyGroup>
-        <Exec Command="$(_PSExe) -NoP -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)/scripts/GenerateDisposableDomains.ps1&quot; -OutputDir &quot;$(MSBuildProjectDirectory)/Generated&quot; -FallbackPath &quot;$(MSBuildProjectDirectory)/data/disposable_email_blocklist.conf&quot;" />
+        <Exec Command="$(_PSExe) -NoP -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)/scripts/GenerateDisposableDomains.ps1&quot; -OutputDir &quot;$(MSBuildProjectDirectory)/Generated&quot; -FallbackPath &quot;$(MSBuildProjectDirectory)/data/disposable_email_blocklist.conf&quot;"/>
     </Target>
 
     <ItemGroup>
-        <Compile Remove="Generated/**" />
-        <Compile Include="Generated/DisposableDomains.g.cs" />
+        <Compile Remove="Generated/**"/>
+        <Compile Include="Generated/DisposableDomains.g.cs"/>
     </ItemGroup>
 
 </Project>

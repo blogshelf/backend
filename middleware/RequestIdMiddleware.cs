@@ -18,12 +18,14 @@ public class RequestIdMiddleware(RequestDelegate next, ILogger<RequestIdMiddlewa
             }
             catch (Exception e)
             {
-                logger.LogError(e, "[{Method}] {Path} unhandled exception", context.Request.Method, context.Request.Path);
+                logger.LogError(e, "[{Method}] {Path} unhandled exception", context.Request.Method,
+                    context.Request.Path);
                 throw;
             }
             finally
             {
-                logger.LogInformation("[{StatusCode}] {Method} {Path}", context.Response.StatusCode, context.Request.Method, context.Request.Path);
+                logger.LogInformation("[{StatusCode}] {Method} {Path}", context.Response.StatusCode,
+                    context.Request.Method, context.Request.Path);
             }
         }
     }

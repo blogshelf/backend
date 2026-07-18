@@ -1,7 +1,10 @@
-﻿using Aliyun.OTS;
+﻿using System.Security.Cryptography;
+using Aliyun.OTS;
+using backend.exceptions;
 using backend.initialization;
 using backend.models;
 using backend.services;
+using backend.Utils;
 using Jdenticon;
 using static backend.Utils.Tools;
 
@@ -26,62 +29,36 @@ public class Methods(OTSClient client)
             AvatarUrl =
                 /* 默认自动生成头像，需要前端自行放大 */
                 $"data:image/svg+xml,{Identicon.FromHash(userId, 16).ToSvg(false)}",
-            State = 0,
+            State = 0
         };
-        try
-        {
-            userData.Create(client);
-        }
-        catch (Exception e)
-        {
-#if DEBUG
-            Log.LogDebug(e.StackTrace);
-#endif
-            Log.LogError(e.Message);
-            return;
-        }
+        userData.Create(client);
 
         var userIdentity = new UserIdentity
         {
             UserId = userId,
             IdentityType = "srp",
-            IdentityKey = regData.Username,
+            IdentityKey = regData.Username
         };
         userIdentity.AuthMarshal(new SrpAuthData
         {
             Verifier = regData.Verifier,
-            Salt = regData.Salt,
+            Salt = regData.Salt
         });
-        try
-        {
-            userIdentity.Create(client);
-        }
-        catch (Exception e)
-        {
-#if DEBUG
-            Log.LogError(e.StackTrace);
-#endif
-            Log.LogError(e.Message);
-        }
+        userIdentity.Create(client);
     }
 
-    public record SessionMeta
-    {
-        public byte[] IpHash = [];
-        public byte[]? DeviceInfo;
-        public string? UserAgent;
-    };
-    public LoginReturn ServerProof(LoginSrp loginCtx, User table, OtpService otp)
+    public LoginBeginReturn BeginSrpLogin(LoginSrpStart loginCtx, User table, OtpService otp)
     {
         OtpVerifyResult? verifyRes = null;
         if (loginCtx is { OtpToken: not null, Mail: not null })
             verifyRes = otp.Verify(loginCtx.Mail, loginCtx.OtpToken);
         switch (verifyRes)
         {
-            case OtpVerifyResult.Valid: case null: table.ActiveAccount(client);break;
-            case OtpVerifyResult.Expired: throw new InvalidOperationException("Verify.Mail.Expired");
-            case OtpVerifyResult.InvalidCode: throw new InvalidOperationException("Verify.Mail.ErrorCode");
-            case OtpVerifyResult.NotFound: throw new InvalidOperationException("Verify.Mail.NotFound");
+            case OtpVerifyResult.Valid:
+            case null: table.ActiveAccount(client); break;
+            case OtpVerifyResult.Expired: throw new ValidationException("Verify.Mail.Expired");
+            case OtpVerifyResult.InvalidCode: throw new ValidationException("Verify.Mail.ErrorCode");
+            case OtpVerifyResult.NotFound: throw new ValidationException("Verify.Mail.NotFound");
             default: throw new ArgumentOutOfRangeException();
         }
 
@@ -91,7 +68,43 @@ public class Methods(OTSClient client)
             IdentityKey = loginCtx.Username
         };
         var authData = userIdentity.ReadAuthData<SrpAuthData>(client);
-        return VerifyLogin(loginCtx.Username, loginCtx.A, authData.Verifier, authData.Salt);
+        return VerifyLoginBegin(loginCtx.Username, loginCtx.A, authData.Verifier, authData.Salt);
     }
 
+    public LoginCompleteReturn CompleteSrpReturn(LoginSrpComplete completeCtx, User user, UserIdentity id,
+        Session session)
+    {
+        if (user.GetPermission(client)[session.UserId].Equals(2))
+            throw new ConflictException("User.Account.Terminated");
+
+        id.IdentityType = "srp";
+        var authData = id.ReadAuthData<SrpAuthData>(client);
+
+        // ReSharper disable once InconsistentNaming
+        var K = ComputeK(session.SrpA, authData.Verifier, session.SrpServerSecret, session.SrpB);
+        if (!VerifyClientProof(user.Name, authData.Salt, session.SrpA, session.SrpB, K, completeCtx.M))
+        {
+            session.Delete(client);
+            return new LoginCompleteReturn
+            {
+                Proofed = false,
+                ServerProof = null,
+                EncryptedSeed = null
+            };
+        }
+
+        var seed = RandomNumberGenerator.GetBytes(32);
+        var encryptedSeed = AesGcmHelper.Encrypt(K, seed);
+
+        session.UpdateToAuthenticated(client, seed);
+        session.CleanUpSrpData(client);
+
+        return new LoginCompleteReturn
+        {
+            Proofed = true,
+            ServerProof = ComputeServerProof(session.SrpA,
+                ComputeClientM1(user.Name, authData.Salt, session.SrpA, session.SrpB, K), K),
+            EncryptedSeed = encryptedSeed
+        };
+    }
 }

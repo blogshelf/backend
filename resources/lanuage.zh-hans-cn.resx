@@ -6,10 +6,14 @@
         <value>1.3</value>
     </resheader>
     <resheader name="reader">
-        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
     </resheader>
     <resheader name="writer">
-        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
     </resheader>
     <data name="Bio.Missing.Default" xml:space="preserve">
         <value>简介被泥头车创飞到异世界了，请坐和放宽，距离返程还剩：17y 11m 29d</value>
@@ -52,5 +56,8 @@
     </data>
     <data name="Auth.Srp.PublicData.OK" xml:space="preserve">
         <value>发送协商数据成功</value>
+    </data>
+    <data name="Auth.Login.NotFound" xml:space="preserve">
+        <value>在 /auth/srp/login/compete 中找到了 session，但暂未找到用户数据</value>
     </data>
 </root>

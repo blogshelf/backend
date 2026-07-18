@@ -33,16 +33,7 @@ public class DotEnv
 
         if (credConfig.Type is not null)
             Credential = new Client(credConfig);
-        
-        
     }
-    
-    private string Get(string key) =>
-        _config.GetSection(key).Value ?? Environment.GetEnvironmentVariable(key) ??
-        throw new InvalidOperationException($"必须设置 {key}");
-
-    private string? GetOptional(string key) =>
-        _config.GetSection(key).Value ?? Environment.GetEnvironmentVariable(key);
 
     private string AccessKey => Get("ALIBABA_CLOUD_ACCESS_KEY_ID");
     private string SecretKey => Get("ALIBABA_CLOUD_ACCESS_KEY_SECRET");
@@ -53,7 +44,7 @@ public class DotEnv
 
     public string Region => GetOptional("REGION") ?? "cn-hongkong";
     public bool InVpc => bool.Parse(GetOptional("IN_VPC") ?? "false");
-    private Client? Credential { get; } 
+    private Client? Credential { get; }
 
     internal string EffectiveAccessKeyId => Credential?.GetCredential()?.AccessKeyId ?? AccessKey;
     internal string EffectiveAccessKeySecret => Credential?.GetCredential()?.AccessKeySecret ?? SecretKey;
@@ -87,4 +78,15 @@ public class DotEnv
     internal string SmtpPass => GetOptional("SMTP_PASS") ?? "";
     internal bool SmtpSsl => bool.Parse(GetOptional("SMTP_SSL") ?? "true");
     internal string SmtpFrom => GetOptional("SMTP_FROM") ?? SmtpUser;
+
+    private string Get(string key)
+    {
+        return _config.GetSection(key).Value ?? Environment.GetEnvironmentVariable(key) ??
+            throw new InvalidOperationException($"必须设置 {key}");
+    }
+
+    private string? GetOptional(string key)
+    {
+        return _config.GetSection(key).Value ?? Environment.GetEnvironmentVariable(key);
+    }
 }

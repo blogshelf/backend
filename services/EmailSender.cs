@@ -1,4 +1,5 @@
 using backend.initialization;
+using MailKit.Security;
 using MimeKit;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 
@@ -27,8 +28,8 @@ public class SmtpEmailSender(ILogger<SmtpEmailSender> log, DotEnv env) : IEmailS
 
         using var client = new SmtpClient();
         await client.ConnectAsync(env.SmtpHost, env.SmtpPort, env.SmtpSsl
-            ? MailKit.Security.SecureSocketOptions.SslOnConnect
-            : MailKit.Security.SecureSocketOptions.StartTls, ct);
+            ? SecureSocketOptions.SslOnConnect
+            : SecureSocketOptions.StartTls, ct);
         await client.AuthenticateAsync(env.SmtpUser, env.SmtpPass, ct);
         await client.SendAsync(message, ct);
         await client.DisconnectAsync(true, ct);

@@ -2,7 +2,6 @@
 using Aliyun.OTS;
 using Aliyun.OTS.Request;
 using Ardalis.GuardClauses;
-using backend.initialization;
 using backend.resources;
 using backend.Utils;
 using MessagePack;
@@ -16,6 +15,7 @@ public sealed record Response
     {
         RequestId = requestId ?? IdGen.New();
     }
+
     [Key("status")] public string Status { get; set; } = lanuage.Response_Error_NoInitialized;
     [Key("request_id")] public string RequestId { get; }
 }
@@ -79,6 +79,19 @@ public sealed record SrpChallenge
 {
     [Key("salt")] public required byte[] Salt { get; init; }
     [Key("B")] public required byte[] B { get; init; }
-    [Key("token")] public required string Token { get; init; }
+    [Key("token")] public required byte[] Token { get; init; }
+}
+
+[MessagePackObject]
+public sealed record SrpAuthed
+{
+    [Key("m2")] public required byte[] M2 { get; init; }
+    [Key("ref_token")] public required byte[] RefreshToken { get; init; }
+}
+
+[MessagePackObject]
+public sealed record SeedRenewal
+{
+    [Key("encrypted_seed")] public required byte[] EncryptedSeed { get; init; }
 }
 /* Data */

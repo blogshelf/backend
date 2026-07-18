@@ -24,5 +24,8 @@ public class MsgPackInputFormatter : InputFormatter
         return await InputFormatterResult.SuccessAsync(obj);
     }
 
-    protected override bool CanReadType(Type type) => true;
+    protected override bool CanReadType(Type type)
+    {
+        return true;
+    }
 }
